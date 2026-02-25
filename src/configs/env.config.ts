@@ -5,4 +5,7 @@ export enum EnvKey {
 
   // Redis
   REDIS_URL = 'REDIS_URL',
+
+  // MongoDB
+  MONGO_URL = 'MONGO_URL',
 }

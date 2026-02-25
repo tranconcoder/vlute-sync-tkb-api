@@ -9,4 +9,7 @@ export const validationSchema = Joi.object({
 
   // Redis
   REDIS_URL: Joi.string().required(),
+
+  // MongoDB
+  MONGO_URL: Joi.string().required(),
 });
