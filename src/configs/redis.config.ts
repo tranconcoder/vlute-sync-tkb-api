@@ -1,14 +1,9 @@
 import { registerAs } from '@nestjs/config';
-import { EnvUtil } from 'src/common/utils/env.util';
+import { EnvUtil } from '@/utils/env.util';
 import { EnvKey } from './env.config';
 
-export interface IRedisConfig {
-  url: string;
-}
+export const REDIS_CONFIG_NAMESPACE = 'redis';
 
-export default registerAs(
-  'redis',
-  (): IRedisConfig => ({
-    url: EnvUtil.getEnv(EnvKey.REDIS_URL, true),
-  }),
-);
+export default registerAs(REDIS_CONFIG_NAMESPACE, () => ({
+  url: EnvUtil.getEnv(EnvKey.REDIS_URL, true),
+}));
