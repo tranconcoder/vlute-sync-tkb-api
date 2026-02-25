@@ -7,4 +7,7 @@ export const APP_CONFIG_NAMESPACE = 'app';
 export default registerAs(APP_CONFIG_NAMESPACE, () => ({
   nodeEnv: EnvUtil.getEnv(EnvKey.NODE_ENV, false, 'development'),
   port: EnvUtil.getEnv(EnvKey.PORT, false, 3000, Number),
+  studentEmailSuffix: '@st.vlute.edu.vn',
+  userAgent:
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
 }));

@@ -8,4 +8,7 @@ export enum EnvKey {
 
   // MongoDB
   MONGO_URL = 'MONGO_URL',
+
+  // HttpClient
+  VLUTE_SSO_BASE_URL = 'VLUTE_SSO_BASE_URL',
 }

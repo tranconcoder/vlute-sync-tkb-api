@@ -12,4 +12,7 @@ export const validationSchema = Joi.object({
 
   // MongoDB
   MONGO_URL: Joi.string().required(),
+
+  // HttpClient
+  VLUTE_SSO_BASE_URL: Joi.string().uri().required(),
 });
