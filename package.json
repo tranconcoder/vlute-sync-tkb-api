@@ -20,11 +20,16 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/microservices": "^11.1.14",
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/terminus": "^11.1.1",
+    "axios": "^1.13.5",
+    "ioredis": "^5.9.3",
     "joi": "^18.0.2",
     "mongoose": "^9.2.2",
     "nodemon": "^3.1.14",
