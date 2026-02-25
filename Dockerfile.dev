@@ -1,8 +1,6 @@
 FROM oven/bun:1
 WORKDIR /app
 
-# Copy source code
-COPY . .
 
 # Expose dev port
 EXPOSE 3000
