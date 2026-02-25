@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
-import { EnvUtil } from '@/utils/env.util';
-import { EnvKey } from './env.config';
+import { EnvUtil } from '@/common/utils/env.util';
+import { EnvKey } from '@/configs/env.config';
 
 export const REDIS_CONFIG_NAMESPACE = 'redis';
 
