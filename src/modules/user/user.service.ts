@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './entity/user.entity';
-import { StudentProfile } from '../student/student.service';
+import { StudentProfile } from '../vlute/user/student/student.service';
 
 @Injectable()
 export class UserService {
@@ -32,6 +32,22 @@ export class UserService {
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
+  }
+
+  /**
+   * Returns safe user info for the client (login response / /auth/me).
+   */
+  getUserLoginInfo(user: UserDocument) {
+    return {
+      _id: (user as any)._id,
+      student_id: user.student_id,
+      full_name: user.full_name,
+      email: user.email,
+      avatar: user.avatar,
+      class_name: user.class_name,
+      major_name: user.major_name,
+      role: user.role,
+    };
   }
 
   findAll() {

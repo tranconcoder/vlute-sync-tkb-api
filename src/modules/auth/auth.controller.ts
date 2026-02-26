@@ -1,19 +1,32 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
+  Res,
+  Req,
   UnauthorizedException,
   Inject,
+  UseGuards,
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginService } from '../vlute/login/login.service';
 import { LoginDto } from './dto/login.dto';
 import { StudentService } from '../vlute/user/student/student.service';
 import { UserService } from '../user/user.service';
 import { KeyTokenService } from '../key-token/key-token.service';
+import { AuthGuard } from '@/common/guards/auth.guard';
 import appConfig from '@/configs/app.config';
 import vluteConfig from '../vlute/vlute.config';
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+};
 
 @Controller('auth')
 export class AuthController {
@@ -30,7 +43,10 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { student_id, password } = loginDto;
 
     try {
@@ -70,25 +86,58 @@ export class AuthController {
 
       // 5. Sync User in our system
       const user = await this.userService.syncUser(profile);
-      console.log({
-        user,
-      });
 
       // 6. Create KeyToken and JWT Pair
-      // We'll use the VLUTE session cookies as the "vluteToken" to be encrypted
       const vluteToken = JSON.stringify(callbackResult.cookies);
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // Default 7 days
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
-      return await this.keyTokenService.createKeyToken({
+      const tokens = await this.keyTokenService.createKeyToken({
         userId: (user as any)._id.toString(),
         studentId: user.student_id,
         vluteToken,
         expiresAt,
       });
+
+      // 7. Set HTTP-only cookies
+      res.cookie('accessToken', tokens.accessToken, {
+        ...COOKIE_OPTIONS,
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+
+      res.cookie('refreshToken', tokens.refreshToken, {
+        ...COOKIE_OPTIONS,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      // 8. Return user info (not tokens)
+      return this.userService.getUserLoginInfo(user);
     } catch (error) {
       if (error instanceof UnauthorizedException) throw error;
       return this.authService.handleGeneralError(error);
     }
+  }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const payload = req['user'] as { userId: string };
+    await this.keyTokenService.removeByUserId(payload.userId);
+
+    res.clearCookie('accessToken', COOKIE_OPTIONS);
+    res.clearCookie('refreshToken', COOKIE_OPTIONS);
+
+    return { message: 'Logged out successfully' };
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard)
+  async me(@Req() req: Request) {
+    const payload = req['user'] as { userId: string };
+    const user = await this.userService.findOne(payload.userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.userService.getUserLoginInfo(user);
   }
 }

@@ -18,16 +18,25 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
 
-    // 1. Get userId from headers
-    const userId = request.headers['x-client-id'] as string;
-    if (!userId) {
-      throw new UnauthorizedException('Missing x-client-id header');
+    // 1. Extract Token (prefer cookie, fallback to Authorization header)
+    const token = this.extractToken(request);
+    if (!token) {
+      throw new UnauthorizedException('Missing authentication token');
     }
 
-    // 2. Extract Token
-    const token = this.extractTokenFromHeader(request);
-    if (!token) {
-      throw new UnauthorizedException('Missing authorization token');
+    // 2. Decode token to get userId (without verification first)
+    let userId: string;
+    try {
+      const decoded = JSON.parse(
+        Buffer.from(token.split('.')[1], 'base64').toString(),
+      );
+      userId = decoded.userId;
+    } catch {
+      throw new UnauthorizedException('Malformed token');
+    }
+
+    if (!userId) {
+      throw new UnauthorizedException('Token missing userId');
     }
 
     // 3. Find KeyToken for user
@@ -56,14 +65,12 @@ export class AuthGuard implements CanActivate {
           const oldKey = keyToken.publicKeyHistory[i];
           this.jwtTokenService.verifyToken(token, oldKey);
 
-          // If we reach here, it means the token is valid but used with an OLD key
-          // This suggests a potential token reuse or stolen session
+          // Valid with OLD key → potential token reuse
           await this.keyTokenService.handleIntrusion(userId);
           throw new UnauthorizedException(
             'Security alert: Old session token detected',
           );
         } catch (innerError) {
-          // If verification fails with this old key too, continue searching
           if (
             innerError instanceof UnauthorizedException &&
             innerError.message.includes('Security alert')
@@ -74,12 +81,20 @@ export class AuthGuard implements CanActivate {
         }
       }
 
-      // If we've exhausted the history and still no match
+      // Exhausted history with no match
       throw new UnauthorizedException('Invalid token or expired session');
     }
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
+  /**
+   * Extract token from cookie first, then fallback to Authorization header
+   */
+  private extractToken(request: Request): string | undefined {
+    // 1. Try cookie
+    const cookieToken = request.cookies?.accessToken;
+    if (cookieToken) return cookieToken;
+
+    // 2. Fallback to Bearer header
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }

@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './modules/app/app.module';
 import { EnvUtil } from './common/utils/env.util';
 import { EnvKey } from './configs/env.config';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,7 +17,13 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors();
+  app.use(cookieParser());
+
+  app.enableCors({
+    origin: EnvUtil.getEnv(EnvKey.CORS_ORIGIN, false, 'http://localhost:3001'),
+    credentials: true,
+  });
+
   await app.listen(PORT);
 }
 

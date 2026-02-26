@@ -14,4 +14,7 @@ export enum EnvKey {
 
   // Encryption
   MASTER_ENCRYPTION_KEY = 'MASTER_ENCRYPTION_KEY',
+
+  // CORS
+  CORS_ORIGIN = 'CORS_ORIGIN',
 }
