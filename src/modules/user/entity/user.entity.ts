@@ -5,20 +5,36 @@ export type UserDocument = User & Document;
 
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
+  @Prop({ required: true, unique: true, index: true })
+  vlute_id: string;
+
   @Prop({
     required: true,
     unique: true,
     index: true,
-    minlength: 8,
-    maxlength: 8,
   })
-  studentId: string;
+  student_id: string;
 
   @Prop({ required: true, unique: true, index: true })
   email: string;
 
   @Prop({ required: true })
-  fullName: string;
+  full_name: string;
+
+  @Prop()
+  date_of_birth?: string;
+
+  @Prop()
+  class_id?: string;
+
+  @Prop()
+  class_name?: string;
+
+  @Prop()
+  major_id?: string;
+
+  @Prop()
+  major_name?: string;
 
   @Prop()
   avatar?: string;

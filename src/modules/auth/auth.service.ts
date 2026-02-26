@@ -23,8 +23,8 @@ export class AuthService {
    * @returns LoginResponseDto containing success status and cookies
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    const { studentId, password } = loginDto;
-    const email = `${studentId}${this.config.studentEmailSuffix}`;
+    const { student_id, password } = loginDto;
+    const email = `${student_id}${this.config.studentEmailSuffix}`;
 
     try {
       // Step 1: Initialize session

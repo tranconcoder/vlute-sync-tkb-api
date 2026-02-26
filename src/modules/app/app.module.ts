@@ -7,6 +7,8 @@ import { AppService } from './app.service';
 import { HealthModule } from '../health/health.module';
 import { MongodbModule } from '../mongodb/mongodb.module';
 import { AuthModule } from '../auth/auth.module';
+import { EncryptionModule } from '../encryption/encryption.module';
+import { JwtTokenModule } from '../jwt-token/jwt-token.module';
 
 @Module({
   imports: [
@@ -16,6 +18,10 @@ import { AuthModule } from '../auth/auth.module';
       load: configs,
       validationSchema,
     }),
+
+    // Security & Encryption
+    JwtTokenModule,
+    EncryptionModule,
 
     // MongoDB
     MongodbModule,

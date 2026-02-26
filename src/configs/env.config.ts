@@ -11,4 +11,7 @@ export enum EnvKey {
 
   // HttpClient
   VLUTE_SSO_BASE_URL = 'VLUTE_SSO_BASE_URL',
+
+  // Encryption
+  MASTER_ENCRYPTION_KEY = 'MASTER_ENCRYPTION_KEY',
 }
