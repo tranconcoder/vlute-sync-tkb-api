@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { HttpClientService } from '../http-client/http-client.service';
 import appConfig from '@/configs/app.config';
+import authConfig from '../auth/auth.config';
 
 export interface StudentProfile {
   vlute_id: string;
@@ -13,7 +14,7 @@ export interface StudentProfile {
   class_name?: string;
   major_id?: string;
   major_name?: string;
-  avatar?: string;
+  avatar?: string | null;
 }
 
 interface VluteProfileResponse {
@@ -40,6 +41,8 @@ export class StudentService {
     private readonly httpClientService: HttpClientService,
     @Inject(appConfig.KEY)
     private readonly config: ConfigType<typeof appConfig>,
+    @Inject(authConfig.KEY)
+    private readonly authConf: ConfigType<typeof authConfig>,
   ) {}
 
   /**
@@ -47,18 +50,31 @@ export class StudentService {
    * @param cookies Laravel session cookies (laravel_session, XSRF-TOKEN)
    */
   async getProfile(cookies: string[]): Promise<StudentProfile> {
-    const url = 'https://daotao.vlute.edu.vn/api/sinh-vien/ttsv';
+    const url = this.authConf.api.studentProfile;
+
+    const cleanCookies = cookies
+      .map((c) => c.split(';')[0])
+      .filter((c) => c.trim().length > 0)
+      .join('; ');
 
     try {
-      const response = await this.httpClientService.axios.get(url, {
+      // Use a fresh request to avoid any inherited headers from HttpClientService
+      const response = await this.httpClientService.axios.request({
+        method: 'GET',
+        url: url,
         headers: {
-          cookie: cookies.join('; '),
-          'user-agent': this.config.userAgent,
-          'x-requested-with': 'XMLHttpRequest',
+          Accept: 'application/json, text/plain, */*',
+          'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8',
+          Cookie: cleanCookies,
+          Referer: this.authConf.api.studentReferer,
+          'User-Agent': this.config.userAgent,
+          'X-Requested-With': 'XMLHttpRequest',
         },
       });
 
+      console.log('[StudentService] Status:', response.status);
       const result = response.data as VluteProfileResponse;
+
       if (result.status !== 200 || !result.data || result.data.length === 0) {
         throw new Error(
           result.message || 'Failed to fetch student profile from VLUTE',

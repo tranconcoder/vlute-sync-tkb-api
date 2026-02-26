@@ -12,6 +12,7 @@ import { StudentService } from '../student/student.service';
 import { UserService } from '../user/user.service';
 import { KeyTokenService } from '../key-token/key-token.service';
 import appConfig from '@/configs/app.config';
+import authConfig from './auth.config';
 
 @Controller('auth')
 export class AuthController {
@@ -22,6 +23,8 @@ export class AuthController {
     private readonly keyTokenService: KeyTokenService,
     @Inject(appConfig.KEY)
     private readonly config: ConfigType<typeof appConfig>,
+    @Inject(authConfig.KEY)
+    private readonly authConf: ConfigType<typeof authConfig>,
   ) {}
 
   @Post('login')
@@ -29,9 +32,11 @@ export class AuthController {
     const { student_id, password } = loginDto;
 
     try {
-      // 1. Initialize SSO Session
+      // 1. Initialize SSO Session for Daotao (where the profile API is)
       const { ssoUrl, cookies: initialCookies } =
-        await this.authService.initializeSsoSession();
+        await this.authService.initializeSsoSession(
+          this.authConf.sso.redirectUri.daotao,
+        );
 
       // 2. Authenticate with SSO
       const email = `${student_id}${this.config.studentEmailSuffix}`;
@@ -63,6 +68,9 @@ export class AuthController {
 
       // 5. Sync User in our system
       const user = await this.userService.syncUser(profile);
+      console.log({
+        user,
+      });
 
       // 6. Create KeyToken and JWT Pair
       // We'll use the VLUTE session cookies as the "vluteToken" to be encrypted

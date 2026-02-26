@@ -7,11 +7,13 @@ import { StudentModule } from '../student/student.module';
 import { UserModule } from '../user/user.module';
 import { KeyTokenModule } from '../key-token/key-token.module';
 import appConfig from '@/configs/app.config';
+import authConfig from './auth.config';
 
 @Module({
   imports: [
     HttpClientModule,
     ConfigModule.forFeature(appConfig),
+    ConfigModule.forFeature(authConfig),
     StudentModule,
     UserModule,
     KeyTokenModule,

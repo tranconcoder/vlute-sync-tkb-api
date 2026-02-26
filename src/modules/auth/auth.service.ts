@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { HttpClientService } from '../http-client/http-client.service';
 import appConfig from '@/configs/app.config';
+import authConfig from './auth.config';
 
 @Injectable()
 export class AuthService {
@@ -9,6 +10,8 @@ export class AuthService {
     private readonly httpClientService: HttpClientService,
     @Inject(appConfig.KEY)
     private readonly config: ConfigType<typeof appConfig>,
+    @Inject(authConfig.KEY)
+    private readonly authConf: ConfigType<typeof authConfig>,
   ) {}
 
   /**
@@ -16,12 +19,15 @@ export class AuthService {
    *
    * @returns Object containing the final SSO URL and required session cookies
    */
-  async initializeSsoSession(): Promise<{
+  async initializeSsoSession(
+    redirectUri: string = this.authConf.sso.redirectUri.htql,
+  ): Promise<{
     ssoUrl: string;
     cookies: string[];
   }> {
-    const authUrl =
-      '/auth/realms/VLUTE/protocol/openid-connect/auth?client_id=vlute.edu.vn&redirect_uri=https://htql.vlute.edu.vn/login/callback&response_type=code&scope=openid';
+    const authUrl = `${this.authConf.sso.authEndpoint}?client_id=${
+      this.authConf.sso.clientId
+    }&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid`;
 
     console.log('[AuthService] Fetching initial SSO session (Dynamic)...');
 
@@ -71,16 +77,16 @@ export class AuthService {
     return this.httpClientService.axios.post(
       url,
       new URLSearchParams({
-        credentialId: '',
+        credentialId: this.authConf.form.credentialId,
         username: email,
         password: pass,
-        login: 'login',
+        login: this.authConf.form.loginAction,
       }).toString(),
       {
         headers: {
           'content-type': 'application/x-www-form-urlencoded',
           cookie: cookies.join('; '),
-          origin: 'https://sso.vlute.edu.vn',
+          origin: this.authConf.sso.baseUrl,
           referer: url,
           'user-agent': this.config.userAgent,
         },
