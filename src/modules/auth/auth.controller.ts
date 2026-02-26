@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { AuthService } from './auth.service';
+import { VluteLoginService } from './vlute-login.service';
 import { LoginDto } from './dto/login.dto';
 import { StudentService } from '../student/student.service';
 import { UserService } from '../user/user.service';
@@ -18,6 +19,7 @@ import authConfig from './auth.config';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly vluteLoginService: VluteLoginService,
     private readonly studentService: StudentService,
     private readonly userService: UserService,
     private readonly keyTokenService: KeyTokenService,
@@ -34,13 +36,13 @@ export class AuthController {
     try {
       // 1. Initialize SSO Session for Daotao (where the profile API is)
       const { ssoUrl, cookies: initialCookies } =
-        await this.authService.initializeSsoSession(
+        await this.vluteLoginService.initializeSsoSession(
           this.authConf.sso.redirectUri.daotao,
         );
 
       // 2. Authenticate with SSO
       const email = `${student_id}${this.config.studentEmailSuffix}`;
-      const authResponse = await this.authService.authenticate(
+      const authResponse = await this.vluteLoginService.authenticate(
         email,
         password,
         ssoUrl,
@@ -56,7 +58,7 @@ export class AuthController {
 
       // 3. Consume Callback to get VLUTE cookies
       const callbackResult =
-        await this.authService.consumeCallback(redirectLocation);
+        await this.vluteLoginService.consumeCallback(redirectLocation);
       if (!callbackResult.success) {
         throw new UnauthorizedException(callbackResult.message);
       }

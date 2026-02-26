@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthService } from './auth.service';
+import { VluteLoginService } from './vlute-login.service';
 import { AuthController } from './auth.controller';
 import { HttpClientModule } from '../http-client/http-client.module';
 import { StudentModule } from '../student/student.module';
@@ -19,6 +20,6 @@ import authConfig from './auth.config';
     KeyTokenModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, VluteLoginService],
 })
 export class AuthModule {}
