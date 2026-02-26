@@ -7,26 +7,26 @@ import {
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { VluteLoginService } from './vlute-login.service';
+import { LoginService } from '../vlute/login/login.service';
 import { LoginDto } from './dto/login.dto';
-import { StudentService } from '../student/student.service';
+import { StudentService } from '../vlute/user/student/student.service';
 import { UserService } from '../user/user.service';
 import { KeyTokenService } from '../key-token/key-token.service';
 import appConfig from '@/configs/app.config';
-import authConfig from './auth.config';
+import vluteConfig from '../vlute/vlute.config';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly vluteLoginService: VluteLoginService,
+    private readonly loginService: LoginService,
     private readonly studentService: StudentService,
     private readonly userService: UserService,
     private readonly keyTokenService: KeyTokenService,
     @Inject(appConfig.KEY)
     private readonly config: ConfigType<typeof appConfig>,
-    @Inject(authConfig.KEY)
-    private readonly authConf: ConfigType<typeof authConfig>,
+    @Inject(vluteConfig.KEY)
+    private readonly authConf: ConfigType<typeof vluteConfig>,
   ) {}
 
   @Post('login')
@@ -36,13 +36,13 @@ export class AuthController {
     try {
       // 1. Initialize SSO Session for Daotao (where the profile API is)
       const { ssoUrl, cookies: initialCookies } =
-        await this.vluteLoginService.initializeSsoSession(
+        await this.loginService.initializeSsoSession(
           this.authConf.sso.redirectUri.daotao,
         );
 
       // 2. Authenticate with SSO
       const email = `${student_id}${this.config.studentEmailSuffix}`;
-      const authResponse = await this.vluteLoginService.authenticate(
+      const authResponse = await this.loginService.authenticate(
         email,
         password,
         ssoUrl,
@@ -58,7 +58,7 @@ export class AuthController {
 
       // 3. Consume Callback to get VLUTE cookies
       const callbackResult =
-        await this.vluteLoginService.consumeCallback(redirectLocation);
+        await this.loginService.consumeCallback(redirectLocation);
       if (!callbackResult.success) {
         throw new UnauthorizedException(callbackResult.message);
       }

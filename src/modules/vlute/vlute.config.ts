@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 
-export default registerAs('auth', () => ({
+export default registerAs('vlute', () => ({
   sso: {
     baseUrl: process.env.SSO_BASE_URL || 'https://sso.vlute.edu.vn',
     realm: 'VLUTE',

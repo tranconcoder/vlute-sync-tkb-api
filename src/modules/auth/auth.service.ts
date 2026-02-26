@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { HttpClientService } from '../http-client/http-client.service';
 import appConfig from '@/configs/app.config';
-import authConfig from './auth.config';
+import vluteConfig from '../vlute/vlute.config';
 
 @Injectable()
 export class AuthService {
@@ -10,8 +10,8 @@ export class AuthService {
     private readonly httpClientService: HttpClientService,
     @Inject(appConfig.KEY)
     private readonly config: ConfigType<typeof appConfig>,
-    @Inject(authConfig.KEY)
-    private readonly authConf: ConfigType<typeof authConfig>,
+    @Inject(vluteConfig.KEY)
+    private readonly authConf: ConfigType<typeof vluteConfig>,
   ) {}
 
   /**

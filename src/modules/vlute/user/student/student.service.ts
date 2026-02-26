@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import { HttpClientService } from '../http-client/http-client.service';
+import { HttpClientService } from '../../../http-client/http-client.service';
 import appConfig from '@/configs/app.config';
-import authConfig from '../auth/auth.config';
+import vluteConfig from '../../vlute.config';
 
 export interface StudentProfile {
   vlute_id: string;
@@ -41,8 +41,8 @@ export class StudentService {
     private readonly httpClientService: HttpClientService,
     @Inject(appConfig.KEY)
     private readonly config: ConfigType<typeof appConfig>,
-    @Inject(authConfig.KEY)
-    private readonly authConf: ConfigType<typeof authConfig>,
+    @Inject(vluteConfig.KEY)
+    private readonly authConf: ConfigType<typeof vluteConfig>,
   ) {}
 
   /**
