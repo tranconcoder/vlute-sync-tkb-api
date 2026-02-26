@@ -78,4 +78,15 @@ export class JwtTokenService {
       throw new UnauthorizedException('Authentication failed');
     }
   }
+
+  /**
+   * Decode JWT without verification
+   */
+  decodeToken(token: string): JwtPayload | null {
+    try {
+      return jwt.decode(token) as JwtPayload;
+    } catch {
+      return null;
+    }
+  }
 }

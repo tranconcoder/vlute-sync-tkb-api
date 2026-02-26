@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { ForbiddenError } from '@/core/response';
 import { JwtTokenService } from '@/modules/jwt-token/jwt-token.service';
 import { KeyTokenService } from '@/modules/key-token/key-token.service';
 
@@ -59,6 +60,15 @@ export class AuthGuard implements CanActivate {
       request['user'] = payload;
       return true;
     } catch (error) {
+      if (
+        error instanceof UnauthorizedException &&
+        error.message === 'Token has expired'
+      ) {
+        throw new ForbiddenError('Token has expired', {
+          code: 'TOKEN_EXPIRED',
+        });
+      }
+
       // 5. Check if it matches an older key in history (Intrusion Detection)
       for (let i = 1; i < keyToken.publicKeyHistory.length; i++) {
         try {

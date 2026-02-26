@@ -12,7 +12,7 @@ export default registerAs(APP_CONFIG_NAMESPACE, () => ({
   googleRedirectPath: EnvUtil.getEnv(
     EnvKey.GOOGLE_CLIENT_REDIRECT_URL,
     false,
-    '/features/sync-calendar',
+    '/features/sync-calendar?linking=success',
   ),
   studentEmailSuffix: EnvUtil.getEnv(
     EnvKey.STUDENT_EMAIL_SUFFIX,

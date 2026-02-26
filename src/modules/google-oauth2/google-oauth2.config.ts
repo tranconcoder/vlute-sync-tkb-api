@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import { EnvUtil } from '../../common/utils/env.util';
+import { EnvUtil } from '@/common/utils/env.util';
 import { EnvKey } from '../../configs/env.config';
 
 export const GOOGLE_OAUTH2_CONFIG_NAMESPACE = 'google-oauth2';
