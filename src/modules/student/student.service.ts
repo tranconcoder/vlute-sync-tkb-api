@@ -16,6 +16,24 @@ export interface StudentProfile {
   avatar?: string;
 }
 
+interface VluteProfileResponse {
+  status: number;
+  message: string;
+  data: Array<{
+    id_sinh_vien: number;
+    mssv: number;
+    ho_ten: string;
+    email: string;
+    ngay_sinh: string;
+    ma_lop: string;
+    ten_lop: string;
+    ma_nganh: string;
+    ten_nganh: string;
+    anh: string | null;
+    [key: string]: any;
+  }>;
+}
+
 @Injectable()
 export class StudentService {
   constructor(
@@ -29,31 +47,38 @@ export class StudentService {
    * @param cookies Laravel session cookies (laravel_session, XSRF-TOKEN)
    */
   async getProfile(cookies: string[]): Promise<StudentProfile> {
-    const url = 'https://htql.vlute.edu.vn/api/user-info';
+    const url = 'https://daotao.vlute.edu.vn/api/sinh-vien/ttsv';
 
     try {
       const response = await this.httpClientService.axios.get(url, {
         headers: {
           cookie: cookies.join('; '),
           'user-agent': this.config.userAgent,
+          'x-requested-with': 'XMLHttpRequest',
         },
       });
 
-      const data = response.data;
+      const result = response.data as VluteProfileResponse;
+      if (result.status !== 200 || !result.data || result.data.length === 0) {
+        throw new Error(
+          result.message || 'Failed to fetch student profile from VLUTE',
+        );
+      }
+
+      const data = result.data[0];
 
       // Map API response to our StudentProfile interface
-      // Note: Adjust mapping based on actual VLUTE API response structure
       return {
-        vlute_id: data.id || data.vlute_id,
-        student_id: data.student_id || data.username,
-        full_name: data.full_name || data.name,
+        vlute_id: data.id_sinh_vien?.toString(),
+        student_id: data.mssv?.toString(),
+        full_name: data.ho_ten,
         email: data.email,
-        date_of_birth: data.birthday,
-        class_id: data.class_id,
-        class_name: data.class_name,
-        major_id: data.major_id,
-        major_name: data.major_name,
-        avatar: data.avatar,
+        date_of_birth: data.ngay_sinh,
+        class_id: data.ma_lop,
+        class_name: data.ten_lop,
+        major_id: data.ma_nganh,
+        major_name: data.ten_nganh,
+        avatar: data.anh,
       };
     } catch (error) {
       console.error('[StudentService] Failed to fetch student profile:', error);

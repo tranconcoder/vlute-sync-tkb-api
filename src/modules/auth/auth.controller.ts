@@ -1,9 +1,17 @@
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UnauthorizedException,
+  Inject,
+} from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { StudentService } from '../student/student.service';
 import { UserService } from '../user/user.service';
 import { KeyTokenService } from '../key-token/key-token.service';
+import appConfig from '@/configs/app.config';
 
 @Controller('auth')
 export class AuthController {
@@ -12,6 +20,8 @@ export class AuthController {
     private readonly studentService: StudentService,
     private readonly userService: UserService,
     private readonly keyTokenService: KeyTokenService,
+    @Inject(appConfig.KEY)
+    private readonly config: ConfigType<typeof appConfig>,
   ) {}
 
   @Post('login')
@@ -24,7 +34,7 @@ export class AuthController {
         await this.authService.initializeSsoSession();
 
       // 2. Authenticate with SSO
-      const email = `${student_id}@student.vlute.edu.vn`; // Note: suffix could be from config
+      const email = `${student_id}${this.config.studentEmailSuffix}`;
       const authResponse = await this.authService.authenticate(
         email,
         password,
