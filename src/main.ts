@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './modules/app/app.module';
 import { EnvUtil } from './common/utils/env.util';
 import { EnvKey } from './configs/env.config';
+import { AllExceptionsFilter } from './core/filters/all-exceptions.filter';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
@@ -16,6 +17,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   app.use(cookieParser());
 
