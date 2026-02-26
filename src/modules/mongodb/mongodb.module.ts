@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigType } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import mongodbConfig from './mongodb.config';
 

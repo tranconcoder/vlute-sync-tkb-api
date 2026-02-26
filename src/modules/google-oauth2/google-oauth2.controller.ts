@@ -1,16 +1,23 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Res, Inject } from '@nestjs/common';
 import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
-import { GoogleOauth2Service } from './google-oauth2.service';
-import { OkResponse } from '@/core/response';
+import type { Response } from 'express';
+import {
+  GoogleOauth2Service,
+  type GoogleProfile,
+} from './google-oauth2.service';
 import { UserService } from '../user/user.service';
 import { AuthGuard } from '@/common/guards/auth.guard';
 import { GoogleLinkGuard } from './guards/google-link.guard';
+import { appConfig } from '@/configs';
+import type { ConfigType } from '@nestjs/config';
 
 @Controller('auth/google')
 export class GoogleOauth2Controller {
   constructor(
     private readonly googleOauth2Service: GoogleOauth2Service,
     private readonly userService: UserService,
+    @Inject(appConfig.KEY)
+    private readonly applicationConfig: ConfigType<typeof appConfig>,
   ) {}
 
   @Get()
@@ -21,19 +28,18 @@ export class GoogleOauth2Controller {
 
   @Get('callback')
   @UseGuards(PassportAuthGuard('google'))
-  async googleAuthRedirect(@Req() req: any) {
+  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     // Extract userId from state
     const state = JSON.parse(req.query.state as string);
     const userId = state.userId as string;
 
-    const user = await this.googleOauth2Service.linkGoogleAccount(
+    await this.googleOauth2Service.linkGoogleAccount(
       userId,
-      req.user,
+      req.user as GoogleProfile,
     );
 
-    return new OkResponse({
-      message: 'Liên kết tài khoản Google thành công',
-      data: this.userService.getUserLoginInfo(user),
-    });
+    res.redirect(
+      `${this.applicationConfig.clientUrl}${this.applicationConfig.googleRedirectPath}`,
+    );
   }
 }

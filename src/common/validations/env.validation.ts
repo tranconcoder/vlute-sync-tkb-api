@@ -1,24 +1,34 @@
+import { EnvKey } from '@/configs/env.config';
 import * as Joi from 'joi';
 
 export const validationSchema = Joi.object({
   // App
-  NODE_ENV: Joi.string()
+  [EnvKey.NODE_ENV]: Joi.string()
     .valid('development', 'production', 'test')
     .default('development'),
-  PORT: Joi.number().default(3000),
+  [EnvKey.PORT]: Joi.number().default(3000),
+  [EnvKey.BASE_SERVER_URL]: Joi.string().uri().required(),
+  [EnvKey.BASE_CLIENT_URL]: Joi.string().uri().required(),
+  [EnvKey.STUDENT_EMAIL_SUFFIX]: Joi.string().optional(),
 
   // Redis
-  REDIS_URL: Joi.string().required(),
+  [EnvKey.REDIS_URL]: Joi.string().required(),
 
   // MongoDB
-  MONGO_URL: Joi.string().required(),
+  [EnvKey.MONGO_URL]: Joi.string().required(),
 
   // HttpClient
-  VLUTE_SSO_BASE_URL: Joi.string().uri().required(),
+  [EnvKey.VLUTE_SSO_BASE_URL]: Joi.string().uri().required(),
+
+  // Encryption
+  [EnvKey.MASTER_ENCRYPTION_KEY]: Joi.string().required(),
+
+  // Cors
+  [EnvKey.CORS_ORIGIN]: Joi.string().required(),
 
   // Google OAuth2
-  BASE_SERVER_URL: Joi.string().uri().required(),
-  GOOGLE_CLIENT_ID: Joi.string().required(),
-  GOOGLE_CLIENT_SECRET: Joi.string().required(),
-  GOOGLE_CALLBACK_PATH: Joi.string().required(),
+  [EnvKey.GOOGLE_CLIENT_ID]: Joi.string().required(),
+  [EnvKey.GOOGLE_CLIENT_SECRET]: Joi.string().required(),
+  [EnvKey.GOOGLE_CALLBACK_PATH]: Joi.string().required(),
+  [EnvKey.GOOGLE_CLIENT_REDIRECT_URL]: Joi.string().required(),
 });
