@@ -9,6 +9,7 @@ import { MongodbModule } from '../mongodb/mongodb.module';
 import { AuthModule } from '../auth/auth.module';
 import { EncryptionModule } from '../encryption/encryption.module';
 import { JwtTokenModule } from '../jwt-token/jwt-token.module';
+import { GoogleOauth2Module } from '../google-oauth2/google-oauth2.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { JwtTokenModule } from '../jwt-token/jwt-token.module';
 
     // Authentication
     AuthModule,
+    GoogleOauth2Module,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -18,6 +18,14 @@ export class User {
   @Prop({ required: true, unique: true, index: true })
   email: string;
 
+  @Prop({ type: Object })
+  google_info?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string;
+  };
+
   @Prop({ required: true })
   full_name: string;
 

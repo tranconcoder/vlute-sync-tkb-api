@@ -1,5 +1,6 @@
 export enum EnvKey {
   // App
+  BASE_SERVER_URL = 'BASE_SERVER_URL',
   NODE_ENV = 'NODE_ENV',
   PORT = 'PORT',
 
@@ -17,4 +18,9 @@ export enum EnvKey {
 
   // Cors
   CORS_ORIGIN = 'CORS_ORIGIN',
+
+  // Google OAuth2
+  GOOGLE_CLIENT_ID = 'GOOGLE_CLIENT_ID',
+  GOOGLE_CLIENT_SECRET = 'GOOGLE_CLIENT_SECRET',
+  GOOGLE_CALLBACK_PATH = 'GOOGLE_CALLBACK_PATH',
 }

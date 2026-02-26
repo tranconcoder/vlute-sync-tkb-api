@@ -34,6 +34,25 @@ export class UserService {
     );
   }
 
+  async linkGoogleAccount(
+    userId: string,
+    data: {
+      id: string;
+      name: string;
+      email: string;
+      avatar: string;
+    },
+  ): Promise<UserDocument | null> {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      {
+        google_info: data,
+        avatar: data.avatar,
+      },
+      { new: true },
+    );
+  }
+
   /**
    * Returns safe user info for the client (login response / /auth/me).
    */

@@ -15,4 +15,10 @@ export const validationSchema = Joi.object({
 
   // HttpClient
   VLUTE_SSO_BASE_URL: Joi.string().uri().required(),
+
+  // Google OAuth2
+  BASE_SERVER_URL: Joi.string().uri().required(),
+  GOOGLE_CLIENT_ID: Joi.string().required(),
+  GOOGLE_CLIENT_SECRET: Joi.string().required(),
+  GOOGLE_CALLBACK_PATH: Joi.string().required(),
 });
