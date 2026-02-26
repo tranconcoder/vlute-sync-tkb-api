@@ -65,6 +65,7 @@ export class UserService {
       avatar: user.avatar,
       class_name: user.class_name,
       major_name: user.major_name,
+      google_info: user.google_info,
       role: user.role,
     };
   }
