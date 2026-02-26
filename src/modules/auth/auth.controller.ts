@@ -5,7 +5,6 @@ import {
   Body,
   Res,
   Req,
-  UnauthorizedException,
   Inject,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +17,8 @@ import { StudentService } from '../vlute/user/student/student.service';
 import { UserService } from '../user/user.service';
 import { KeyTokenService } from '../key-token/key-token.service';
 import { AuthGuard } from '@/common/guards/auth.guard';
+import { OkResponse } from '@/core/response';
+import { UnauthorizedError } from '@/core/response';
 import appConfig from '@/configs/app.config';
 import vluteConfig from '../vlute/vlute.config';
 
@@ -69,14 +70,14 @@ export class AuthController {
         | string
         | undefined;
       if (!redirectLocation) {
-        throw new UnauthorizedException('Invalid credentials or SSO error');
+        throw new UnauthorizedError('Invalid credentials or SSO error');
       }
 
       // 3. Consume Callback to get VLUTE cookies
       const callbackResult =
         await this.vluteLoginService.consumeCallback(redirectLocation);
       if (!callbackResult.success) {
-        throw new UnauthorizedException(callbackResult.message);
+        throw new UnauthorizedError(callbackResult.message);
       }
 
       // 4. Get Student Profile from VLUTE
@@ -110,10 +111,13 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      // 8. Return user info (not tokens)
-      return this.userService.getUserLoginInfo(user);
+      // 8. Return standardized success response
+      return new OkResponse({
+        message: 'Đăng nhập thành công',
+        data: this.userService.getUserLoginInfo(user),
+      });
     } catch (error) {
-      if (error instanceof UnauthorizedException) throw error;
+      if (error instanceof UnauthorizedError) throw error;
       return this.authService.handleGeneralError(error);
     }
   }
@@ -127,7 +131,7 @@ export class AuthController {
     res.clearCookie('accessToken', COOKIE_OPTIONS);
     res.clearCookie('refreshToken', COOKIE_OPTIONS);
 
-    return { message: 'Logged out successfully' };
+    return new OkResponse({ message: 'Đăng xuất thành công' });
   }
 
   @Get('me')
@@ -136,8 +140,11 @@ export class AuthController {
     const payload = req['user'] as { userId: string };
     const user = await this.userService.findOne(payload.userId);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedError('User not found');
     }
-    return this.userService.getUserLoginInfo(user);
+    return new OkResponse({
+      message: 'User info',
+      data: this.userService.getUserLoginInfo(user),
+    });
   }
 }
