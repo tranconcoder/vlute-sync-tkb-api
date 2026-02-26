@@ -19,7 +19,7 @@ import vluteConfig from '../vlute/vlute.config';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly loginService: LoginService,
+    private readonly vluteLoginService: LoginService,
     private readonly studentService: StudentService,
     private readonly userService: UserService,
     private readonly keyTokenService: KeyTokenService,
@@ -36,13 +36,13 @@ export class AuthController {
     try {
       // 1. Initialize SSO Session for Daotao (where the profile API is)
       const { ssoUrl, cookies: initialCookies } =
-        await this.loginService.initializeSsoSession(
+        await this.vluteLoginService.initializeSsoSession(
           this.authConf.sso.redirectUri.daotao,
         );
 
       // 2. Authenticate with SSO
       const email = `${student_id}${this.config.studentEmailSuffix}`;
-      const authResponse = await this.loginService.authenticate(
+      const authResponse = await this.vluteLoginService.authenticate(
         email,
         password,
         ssoUrl,
@@ -58,7 +58,7 @@ export class AuthController {
 
       // 3. Consume Callback to get VLUTE cookies
       const callbackResult =
-        await this.loginService.consumeCallback(redirectLocation);
+        await this.vluteLoginService.consumeCallback(redirectLocation);
       if (!callbackResult.success) {
         throw new UnauthorizedException(callbackResult.message);
       }
