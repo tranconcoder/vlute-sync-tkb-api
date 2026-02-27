@@ -1,8 +1,14 @@
+import { EnvUtil } from '@/common/utils/env.util';
+import { EnvKey } from '@/configs/env.config';
 import { registerAs } from '@nestjs/config';
 
 export default registerAs('vlute', () => ({
   sso: {
-    baseUrl: process.env.SSO_BASE_URL || 'https://sso.vlute.edu.vn',
+    baseUrl: EnvUtil.getEnv(
+      EnvKey.VLUTE_SSO_BASE_URL,
+      false,
+      'https://sso.vlute.edu.vn',
+    ),
     realm: 'VLUTE',
     clientId: 'vlute.edu.vn',
     authEndpoint: '/auth/realms/VLUTE/protocol/openid-connect/auth',
