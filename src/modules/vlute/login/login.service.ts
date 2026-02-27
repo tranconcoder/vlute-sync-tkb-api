@@ -4,6 +4,8 @@ import { HttpClientService } from '../../http-client/http-client.service';
 import appConfig from '@/configs/app.config';
 import vluteConfig from '../vlute.config';
 
+import { randomBytes } from 'crypto';
+
 @Injectable()
 export class LoginService {
   constructor(
@@ -17,26 +19,50 @@ export class LoginService {
   /**
    * Step 1: Initiates the SSO flow by calling the auth endpoint and extracting session info.
    *
-   * @returns Object containing the final SSO URL and required session cookies
+   * @param redirectUri The URI to redirect back to after SSO
+   * @param state Optional OIDC state parameter for security
+   * @returns Object containing the final SSO URL, required session cookies, and the state used
    */
   async initializeSsoSession(
     redirectUri: string = this.authConf.sso.redirectUri.htql,
+    state?: string,
   ): Promise<{
     ssoUrl: string;
     cookies: string[];
+    state: string;
   }> {
+    const currentState = state || randomBytes(16).toString('hex').slice(0, 40); // Generate a random state if not provided
     const authUrl = `${this.authConf.sso.authEndpoint}?client_id=${
       this.authConf.sso.clientId
-    }&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid`;
+    }&redirect_uri=${encodeURIComponent(
+      redirectUri,
+    )}&scope=openid&response_type=code&state=${currentState}`;
 
     console.log(
-      '[VluteLoginService] Fetching initial SSO session (Dynamic)...',
+      `[VluteLoginService] Fetching initial SSO session with state: ${currentState}`,
     );
 
     try {
       const response = await this.httpClientService.axios.get(authUrl, {
         maxRedirects: 5,
         validateStatus: (status) => status === 200 || status === 302,
+        headers: {
+          accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+          'accept-language': 'vi,en-US;q=0.9,en;q=0.8',
+          'cache-control': 'max-age=0',
+          priority: 'u=0, i',
+          'sec-ch-ua':
+            '"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"',
+          'sec-ch-ua-mobile': '?0',
+          'sec-ch-ua-platform': '"Linux"',
+          'sec-fetch-dest': 'document',
+          'sec-fetch-mode': 'navigate',
+          'sec-fetch-site': 'same-site',
+          'sec-fetch-user': '?1',
+          'upgrade-insecure-requests': '1',
+          'user-agent': this.config.userAgent,
+        },
       });
 
       let ssoUrl = response.headers.location;
@@ -50,7 +76,7 @@ export class LoginService {
         throw new Error('Could not get SSO URL from initial request');
       }
 
-      return { ssoUrl, cookies };
+      return { ssoUrl, cookies, state: currentState };
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
